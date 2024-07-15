@@ -1,0 +1,17 @@
+{
+  "catchPokemon": {
+    "title": "Catch Pokemon",
+    "target": "pseudoNumber",
+    "option": 1
+  },
+  "releasePokemon": {
+    "title": "Release Pokemon",
+    "name": "primeNumber",
+    "option": 0
+  },
+  "renamePokemon": {
+    "title": "Rename Pokemon",
+    "name": "fibonacciNumber",
+    "opsi": 0
+  }
+}

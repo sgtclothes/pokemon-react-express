@@ -10,5 +10,6 @@ module.exports = function (app) {
     app.post("/api/storePokemon",[authJwt.verifyAppToken], userPokemon.methods().storePokemon); 
     app.post("/api/releasePokemon",[authJwt.verifyAppToken], userPokemon.methods().releasePokemon); 
     app.post("/api/renamePokemon",[authJwt.verifyAppToken], userPokemon.methods().renamePokemon); 
+    app.get("/api/testLogic", userPokemon.methods().testLogic); 
     app.post("/api/log", [authJwt.verifyAppToken], log.methods().updateLog); 
 };
