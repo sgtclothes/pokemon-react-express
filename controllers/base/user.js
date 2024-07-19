@@ -3,8 +3,6 @@ const baseToken = require("./token");
 const models = baseModel.models("User");
 const config = require("../../config/auth.config");
 
-const action = require("../action/action");
-
 let additionalMethods = {
     loginInfo: (req, res) => {
         // let token = req.cookies["x-access-token"];

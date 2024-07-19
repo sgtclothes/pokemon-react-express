@@ -1,31 +1,42 @@
-const base = require("../base");
+const configuration = require("../base").configuration;
 
 exports.getConfiguration = async (req, res) => {
-  let { type } = req.body;
-  let configuration = await base.configuration.methods().findOne({
-    where: {
-      config_type: type,
-    },
-  });
-  res.send({
-    status: "success",
-    message: "Get Configuration Successfully",
-    data: configuration,
-  });
-};
-
-exports.setConfiguration = async (req, res) => {
-  let { config_data, config_type } = req.body;
-  await base.configuration.methods().update(
-    {
-      config_data: config_data,
-    },
-    {
-      where: { config_type: config_type },
+    const { type } = req.body;
+    const response = await configuration.methods().findOne({
+        where: {
+            config_type: type,
+        },
+    });
+    if (!response) {
+        return res.status(404).send({
+            status: "failed",
+            message: "Configuration not found",
+        });
     }
-  );
-  res.send({
-    status: "success",
-    message: "Configuration Update Successfully",
-  });
+    return res.status(200).send({
+        status: "success",
+        message: "Get Configuration Successfully",
+        data: configuration,
+    });
+};
+exports.setConfiguration = async (req, res) => {
+    const { config_data, config_type } = req.body;
+    const response = await configuration.methods().update(
+        {
+            config_data: config_data,
+        },
+        {
+            where: { config_type: config_type },
+        }
+    );
+    if (!response) {
+        return res.status(404).send({
+            status: "failed",
+            message: "Failed to update configuration",
+        });
+    }
+    res.send({
+        status: "success",
+        message: "Configuration Update Successfully",
+    });
 };

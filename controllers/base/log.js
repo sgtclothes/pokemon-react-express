@@ -3,15 +3,15 @@ const baseToken = require("./token");
 const models = baseModel.models("Log");
 const config = require("../../config/auth.config");
 
-const action = require("../action/action");
+const log = require("../action").log;
 
 let additionalMethods = {
     updateLog: (req, res) => {
         let token = req.cookies["x-access-token"];
         let data = req.body;
         let loginInfo = baseToken.methods().verifyToken(token, config.secret, res);
-        data['loginInfo'] = loginInfo;
-        action.logJSON.processJSON("search", data, res);
+        data["loginInfo"] = loginInfo;
+        log.logJSON.processJSON("search", data, res);
         res.status(200).send(data);
     }
 };

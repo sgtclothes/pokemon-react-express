@@ -118,7 +118,7 @@ exports.logout = async (req, res) => {
         },
         {
             where: { tkn_value: token },
-        },
+        }
     );
     res.clearCookie("x-access-token");
     res.send({ status: "success", message: "Logout successfully" });
@@ -138,14 +138,14 @@ exports.changePassword = async (req, res) => {
                 us_register: true,
                 us_updated_on: datetime,
             },
-            { where: { us_id: us_id } },
+            { where: { us_id: us_id } }
         );
         await base.token.methods().update(
             {
-                tkn_active: false
+                tkn_active: false,
             },
             {
-                where: { tkn_value: token }
+                where: { tkn_value: token },
             }
         );
         res.send({ status: "success", message: "User Password updated successfully!" });

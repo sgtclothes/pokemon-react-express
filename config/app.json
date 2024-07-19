@@ -18,7 +18,7 @@
         "types": ["SYS", "ADM", "USER"]
     },
     "paths": {
-        "log": "./public/logs"
+        "log": "public/logs"
     },
     "log": {
         "registerNewUser": {
