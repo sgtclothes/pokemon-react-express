@@ -45,7 +45,6 @@ exports.register = async (req, res) => {
         res.status(500).send({ message: error.message });
     }
 };
-
 exports.login = async (req, res) => {
     try {
         let { us_email, us_password, remember_me } = req.body;
@@ -60,6 +59,7 @@ exports.login = async (req, res) => {
             return res.status(404).send({ status: "failed", message: "User Not found." });
         }
         let passwordIsValid = bcrypt.compareSync(us_password, user.us_password);
+        console.log(passwordIsValid);
         if (!passwordIsValid) {
             return res.status(401).send({
                 accessToken: null,
@@ -75,7 +75,7 @@ exports.login = async (req, res) => {
             message: "user logged in",
             path: "/",
         };
-        let tokenUser = base.token.methods().createToken(loginInfo, config.secret, { expiresIn: expiresIn }, res);
+        let tokenUser = base.token.createToken(loginInfo, config.secret, { expiresIn: expiresIn }, res);
         let tokenData = tokenConfig.login;
         let userIp = (await helper.getClientIP()).ip;
         let datetime = moment().format();
@@ -104,7 +104,6 @@ exports.login = async (req, res) => {
         res.status(500).send({ message: error.message });
     }
 };
-
 exports.logout = async (req, res) => {
     // let token = req.cookies["x-access-token"];
     let token = req.query.token;
@@ -123,7 +122,6 @@ exports.logout = async (req, res) => {
     res.clearCookie("x-access-token");
     res.send({ status: "success", message: "Logout successfully" });
 };
-
 exports.changePassword = async (req, res) => {
     try {
         let datetime = moment().format();

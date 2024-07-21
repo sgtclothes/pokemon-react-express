@@ -169,7 +169,56 @@ exports.fibonacciNumber = {
         }
     },
 };
-exports.readJSONFile = (path, name) => {
+exports.updateObjectValueByPath = (data, path, action, newValue) => {
+    if (!action) {
+        return {
+            message: "Failed to update JSON file",
+            status: "failed",
+            detail: "action not found",
+        };
+    }
+    if (!path.length) {
+        return {
+            message: "Failed to update JSON file",
+            status: "failed",
+            detail: "path not found",
+        };
+    }
+    const key = path[0];
+    if (typeof data === "object" && data !== null) {
+        if (key in data) {
+            console.log(path.length);
+            if (path.length === 1) {
+                if (action === "append") {
+                    data[key].push(newValue);
+                    console.log(data[key]);
+                } else if (action === "update") {
+                    data[key] = newValue;
+                }
+            } else {
+                data = this.updateObjectValueByPath(data[key], path.slice(1), action, newValue);
+            }
+        }
+    }
+    return data;
+};
+exports.getObjectValueByPath = (data, path) => {
+    if (!path.length) {
+        return undefined;
+    }
+    const key = path[0];
+    if (typeof data === "object" && data !== null) {
+        if (key in data) {
+            if (path.length === 1) {
+                return data[key];
+            } else {
+                return this.getObjectValueByPath(data[key], path.slice(1));
+            }
+        }
+    }
+    return undefined;
+};
+exports.readJSONFile = (path, name, options) => {
     try {
         let json;
         if (!fs.existsSync(path + "/" + name + ".json")) {
@@ -179,7 +228,19 @@ exports.readJSONFile = (path, name) => {
             };
         }
         json = JSON.parse(fs.readFileSync(path + "/" + name + ".json", "utf8"));
-        return json;
+        if (options) {
+            /**
+             * options = {
+             *  "path": ["data", "log"]
+             * }
+             */
+            json = this.getObjectValueByPath(json, options.path);
+        }
+        return {
+            message: "Successfully read JSON file",
+            status: "success",
+            data: json,
+        };
     } catch (error) {
         console.log({ message: error.message });
         return {
@@ -189,7 +250,7 @@ exports.readJSONFile = (path, name) => {
         };
     }
 };
-exports.createJSONFile = (path, name, object) => {
+exports.createJSONFile = (path, name, object = {}) => {
     try {
         let json = JSON.stringify(object);
         if (fs.existsSync(path + "/" + name + ".json")) {
@@ -216,19 +277,30 @@ exports.createJSONFile = (path, name, object) => {
         };
     }
 };
-exports.updateJSONFile = (path, name, key, value) => {
+exports.updateJSONFile = (path, name, newValue, options) => {
     try {
-        let json = this.readJSONFile(path, name);
-        if (!json.hasOwnProperty(key)) {
+        let readJSON = this.readJSONFile(path, name);
+        if (readJSON.status === "failed") {
+            return readJSON;
+        }
+        let json = readJSON.data;
+        if (!options) {
             return {
                 message: "Failed to update JSON file",
                 status: "failed",
-                detail: "key not found",
+                detail: "options not found",
             };
         }
-        json[key] = value;
+        /**
+         * options = {
+         *  "path": ["data", "log"]
+         *  "action": "append" | "update"
+         * }
+         */
+        console.log(json);
+        json = this.updateObjectValueByPath(json, options.path, options.action, newValue);
         json = JSON.stringify(json);
-        fs.writeFile(path + "/" + name + ".json", json, "utf8", () => {
+        fs.writeFile(path + "/" + name + ".json", json, "utf8", (err) => {
             if (err) console.log(err);
             else {
                 console.log("The written has the following contents:");

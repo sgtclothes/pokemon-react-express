@@ -47,8 +47,5 @@ exports.methods = () => {
     for (let i in models) {
         methods[i] = models[i];
     }
-    for (let i in additionalMethods) {
-        methods[i] = additionalMethods[i];
-    }
     return methods;
 };

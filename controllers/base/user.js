@@ -1,25 +1,22 @@
 const baseModel = require("./model");
-const baseToken = require("./token");
+const { verifyToken } = require("./token");
+const { updateJSONWhenLogin } = require("./log");
 const models = baseModel.models("User");
 const config = require("../../config/auth.config");
 
-let additionalMethods = {
-    loginInfo: (req, res) => {
-        // let token = req.cookies["x-access-token"];
-        let {token} = req.body;
-        let loginInfo = baseToken.methods().verifyToken(token, config.secret, res);
-        // action.logJSON.processJSON("login", loginInfo);
-        res.status(200).send(loginInfo);
-    },
+exports.loginInfo = (req, res) => {
+    let { token } = req.body;
+    let data = verifyToken(token, config.secret, res);
+    console.log(data);
+    updateJSONWhenLogin(data)
+    // action.logJSON.processJSON("login", loginInfo);
+    res.status(200).send(data);
 };
 
 exports.methods = () => {
     let methods = {};
     for (let i in models) {
         methods[i] = models[i];
-    }
-    for (let i in additionalMethods) {
-        methods[i] = additionalMethods[i];
     }
     return methods;
 };
