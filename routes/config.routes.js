@@ -1,6 +1,6 @@
-const { getConfiguration, setConfiguration } = require("../controllers").action.configuration;
+const configuration = require("../controllers/base/configuration");
 
 module.exports = function (app) {
-    app.post("/api/config", getConfiguration);
-    app.post("/api/updateConfig", setConfiguration);
+    app.post("/api/config", configuration.action.getByType);
+    app.post("/api/config/update", configuration.action.updateByType);
 };

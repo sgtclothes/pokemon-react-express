@@ -40,7 +40,7 @@ Object.keys(db).forEach((modelName) => {
   }
 });
 
-db.ROLES = require("../../config/app.json").roles.types;
+db.ROLES = require("../../config/json/app.json").roles.types;
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;

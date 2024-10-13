@@ -1,15 +1,6 @@
-const { verifyAppToken } = require("../middleware").authJwt;
-const { loginInfo } = require("../controllers").base.user;
-const { getAllMyPokemon, catchingPokemon, storePokemon, releasePokemon, renamePokemon } =
-    require("../controllers").base.userPokemon;
-const { updateLog } = require("../controllers").base.log;
+const authJWT = require("../middleware/application/authJWT");
+const user = require("../controllers/base/user");
 
 module.exports = function (app) {
-    app.post("/api/login/info", [verifyAppToken], loginInfo);
-    app.post("/api/myPokemon", [verifyAppToken], getAllMyPokemon);
-    app.post("/api/catchPokemon", [verifyAppToken], catchingPokemon);
-    app.post("/api/storePokemon", [verifyAppToken], storePokemon);
-    app.post("/api/releasePokemon", [verifyAppToken], releasePokemon);
-    app.post("/api/renamePokemon", [verifyAppToken], renamePokemon);
-    app.post("/api/log", [verifyAppToken], updateLog);
+    app.get("/api/users", [authJWT.verifyAppToken], user.action.getAll);
 };

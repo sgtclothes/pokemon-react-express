@@ -1,11 +1,11 @@
 const jwt = require("jsonwebtoken");
-const config = require("../../config/auth.config.js");
+const config = require("../../config/javascript/auth.js");
 const db = require("../../database/models");
 const User = db.User;
 
 exports.verifyAppToken = (req, res, next) => {
-    // let token = req.cookies["x-access-token"];
-    let { token } = req.body;
+    let token = req.cookies["x-access-token"];
+    console.log(token);
     if (!token) {
         return res.status(403).send({
             status: "failed",

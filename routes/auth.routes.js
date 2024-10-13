@@ -1,11 +1,15 @@
 const { verifySignUp } = require("../middleware");
-const { register, login, logout, changePassword } = require("../controllers").action.auth;
-const { verifyTokenChangePassword } = require("../controllers").base.token;
+const auth = require("../controllers/action/auth");
+const token = require("../controllers/base/token");
 
 module.exports = function (app) {
-    app.post("/api/auth/register", [verifySignUp.checkDuplicateEmail, verifySignUp.checkPassword], register);
-    app.post("/api/auth/login", login);
-    app.get("/api/auth/logout", logout);
-    app.post("/api/auth/changePassword", changePassword);
-    app.post("/api/auth/verifyToken", verifyTokenChangePassword);
+    app.post(
+        "/api/auth/register",
+        [verifySignUp.checkDuplicateEmail, verifySignUp.checkPassword],
+        auth.action.register
+    );
+    app.post("/api/auth/login", auth.action.login);
+    app.get("/api/auth/logout", auth.action.logout);
+    app.post("/api/auth/changePassword", auth.action.changePassword);
+    app.post("/api/auth/verifyTokenChangePassword", token.action.verifyTokenChangePassword);
 };

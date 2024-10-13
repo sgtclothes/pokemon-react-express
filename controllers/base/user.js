@@ -1,22 +1,18 @@
-const baseModel = require("./model");
-const { verifyToken } = require("./token");
-const { updateJSONWhenLogin } = require("./log");
-const models = baseModel.models("User");
-const config = require("../../config/auth.config");
-
-exports.loginInfo = (req, res) => {
-    let { token } = req.body;
-    let data = verifyToken(token, config.secret, res);
-    console.log(data);
-    updateJSONWhenLogin(data)
-    // action.logJSON.processJSON("login", loginInfo);
-    res.status(200).send(data);
+const models = {
+    user: require("./model").models("User"),
 };
+const helper = require("../action/helper");
 
-exports.methods = () => {
-    let methods = {};
-    for (let i in models) {
-        methods[i] = models[i];
-    }
-    return methods;
+exports.action = {
+    getAll: async (req, res) => {
+        try {
+            const users = await models.user.findAll();
+            if (!users) {
+                return res.status(500).send(helper.response.createFailedResponse("Failed to get all users"));
+            }
+            return res.status(200).send(helper.response.createSuccessResponse("Successfully get all users", users));
+        } catch (error) {
+            res.status(500).send({ message: error.message });
+        }
+    },
 };

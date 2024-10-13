@@ -1,92 +1,132 @@
-const baseModel = require("./model");
-const baseToken = require("./token");
-const moment = require("moment");
-const models = baseModel.models("Log");
-const config = require("../../config/auth.config");
-const { prefix, paths } = require("../../config/app.json");
-const { readJSONFile, updateJSONFile, createJSONFile, createFolderIfNotExists } = require("../action/helper");
-const dateFileName = moment().format("DD-MM-YYYY");
 const fs = require("fs");
+const moment = require("moment");
+const baseModel = require("./model");
+const configJSAuth = require("../../config/javascript/auth");
+const configJSONApp = require("../../config/json/app.json");
+const helper = require("../action/helper");
+const dateFileName = moment().format("DD-MM-YYYY");
+const logModel = baseModel.models("Log");
+const tokenModel = baseModel.models("Token");
+const baseToken = require("./token");
 
-const log = require("../action").log;
-
-exports.updateLog = (req, res) => {
-    let token = req.cookies["x-access-token"];
-    let data = req.body;
-    let loginInfo = baseToken.methods().verifyToken(token, config.secret, res);
-    data["loginInfo"] = loginInfo;
-    log.logJSON.processJSON("search", data, res);
-    res.status(200).send(data);
-};
-exports.updateJSONWhenLogin = (data) => {
-    try {
-        const key = prefix + "_" + data.us_id + "_" + data.us_username;
-        createFolderIfNotExists(paths.log);
-        createJSONFile(paths.log, dateFileName, { data: { log: [] } });
-        console.log(key);
-        const json = updateJSONFile(
-            paths.log,
-            dateFileName,
-            {
-                type: "login",
-                user: key,
-                action: "login app",
-                time: dateFileName,
-            },
-            { path: ["data", "log"], action: "append" }
-        );
-        // return {
-        //     message: "Successfully update JSON when login",
-        //     status: "success",
-        //     data: json,
-        // };
-    } catch (error) {
-        console.log(error);
-        return {
-            message: "Failed to update JSON file when login",
-            status: "failed",
-            detail: error.message,
-        };
-    }
-};
-exports.updateJSONWhenSearch = (data) => {
-    try {
-        let key = prefix + "_" + data.us_id + "_" + data.us_username;
-        let log = {
-            type: "search",
-            action: "search '" + data.searchTerm + "'",
-            time: dateFileName,
-        };
-        let dataJSON = this.getJSON();
-        if (!dataJSON.logs.hasOwnProperty(key)) {
-            dataJSON.logs[key] = [log];
-        } else {
-            dataJSON.logs[key].unshift(log);
+exports.action = {
+    register: async (id) => {
+        try {
+            let request = configJSONApp.log.registerNewUser;
+            request.log_name = request.log_name + " (USER ID : " + id + ")";
+            request.log_active = 1;
+            request.log_created_on = moment().format();
+            helper.folder.createIfNotExists(configJSONApp.paths.log);
+            helper.json.create(configJSONApp.paths.log, dateFileName, { register: [] });
+            helper.json.update(configJSONApp.paths.log, "register", dateFileName, request, "push");
+            const logResponse = await logModel.store(request)
+            return helper.response.createSuccessResponse("Successfully to create register log!", logResponse);
+        } catch (error) {
+            return helper.response.createFailedResponse("Failed to create register log", error.message);
         }
-        let json = JSON.stringify(dataJSON);
-        if (data.searchTerm !== "" && data.searchTerm !== null && data.searchTerm !== undefined) {
-            let response = {
-                status: "success",
-                message: "Successfully updated json log",
-            };
-            fs.writeFile(paths.log + "/" + dateFileName + ".json", json, "utf8", (err) => {
-                if (err) console.log(err);
-                else {
-                    console.log(response);
-                    console.log("The written has the following contents:");
-                    console.log(fs.readFileSync(paths.log + "/" + dateFileName + ".json", "utf8"));
-                }
-            });
+    },
+    login: async (id) => {
+        try {
+            let request = configJSONApp.log.login;
+            request.log_name = request.log_name + " (USER ID : " + id + ")";
+            request.log_active = 1;
+            request.log_created_on = moment().format();
+            helper.folder.createIfNotExists(configJSONApp.paths.log);
+            helper.json.create(configJSONApp.paths.log, dateFileName, { login: [] });
+            helper.json.update(configJSONApp.paths.log, "login", dateFileName, request, "push");
+            const logResponse = await logModel.store(request)
+            return helper.response.createSuccessResponse("Successfully to create login log!", logResponse);
+        } catch (error) {
+            return helper.response.createFailedResponse("Failed to create login log", error.message);
         }
-        return json;
-    } catch (error) {
-        console.log({ message: error.message });
-    }
-};
-exports.methods = () => {
-    let methods = {};
-    for (let i in models) {
-        methods[i] = models[i];
-    }
-    return methods;
+    },
+    search: async (id, keyword) => {
+        try {
+            let request = configJSONApp.log.search;
+            request.log_name = request.log_name + " (USER ID : " + id + ")";
+            request.log_description = request.log_description + " (KEYWORD : " + keyword + ")";
+            request.log_active = 1;
+            request.log_created_on = moment().format();
+            helper.folder.createIfNotExists(configJSONApp.paths.log);
+            helper.json.create(configJSONApp.paths.log, dateFileName, { search: [] });
+            helper.json.update(configJSONApp.paths.log, "search", dateFileName, request, "push");
+            const logResponse = await logModel.store(request)
+            return helper.response.createSuccessResponse("Successfully to create search log!", logResponse);
+        } catch (error) {
+            return helper.response.createFailedResponse("Failed to create search log", error.message);
+        }
+    },
+    catchPokemon: async (id, status, pokemonId, pokemonName, pokemonNickname, logic, number) => {
+        try {
+            let request = configJSONApp.log.catchPokemon;
+            request.log_name = request.log_name + " (USER ID : " + id + ") ";
+            request.log_description = request.log_description + " (STATUS : " + status + ") ";
+            request.log_description = request.log_description + " (POKEMON ID : " + pokemonId + ") ";
+            request.log_description = request.log_description + " (POKEMON NAME : " + pokemonName + ") ";
+            request.log_description = request.log_description + " (POKEMON NICKNAME : " + pokemonNickname + ") ";
+            request.log_description = request.log_description + " (USED LOGIC : " + logic + ") ";
+            request.log_description = request.log_description + " (GET NUMBER : " + number + ")";
+            request.log_active = 1;
+            request.log_created_on = moment().format();
+            helper.folder.createIfNotExists(configJSONApp.paths.log);
+            helper.json.create(configJSONApp.paths.log, dateFileName, { catchPokemon: [] });
+            helper.json.update(configJSONApp.paths.log,"catchPokemon", dateFileName, request, "push");
+            const logResponse = await logModel.store(request)
+            return helper.response.createSuccessResponse("Successfully to create catch log!", logResponse);
+        } catch (error) {
+            return helper.response.createFailedResponse("Failed to create catch log", error.message);
+        }
+    },
+    releasePokemon: async (id, status, pokemonId, pokemonName, pokemonNickname, logic, number) => {
+        try {
+            let request = configJSONApp.log.releasePokemon;
+            request.log_name = request.log_name + " (USER ID : " + id + ")";
+            request.log_description = request.log_description + " (STATUS : " + status + ") ";
+            request.log_description = request.log_description + " (POKEMON ID : " + pokemonId + ") ";
+            request.log_description = request.log_description + " (POKEMON NAME : " + pokemonName + ") ";
+            request.log_description = request.log_description + " (POKEMON NICKNAME : " + pokemonNickname + ") ";
+            request.log_description = request.log_description + " (USED LOGIC : " + logic + ") ";
+            request.log_description = request.log_description + " (GET NUMBER : " + number + ")";
+            request.log_active = 1;
+            request.log_created_on = moment().format();
+            helper.folder.createIfNotExists(configJSONApp.paths.log);
+            helper.json.create(configJSONApp.paths.log, dateFileName, { releasePokemon: [] });
+            helper.json.update(configJSONApp.paths.log, "releasePokemon", dateFileName, request, "push");
+            const logResponse = await logModel.store(request)
+            return helper.response.createSuccessResponse("Successfully to create release log!", logResponse);
+        } catch (error) {
+            return helper.response.createFailedResponse("Failed to create release log", error.message);
+        }
+    },
+    renamePokemon: async (
+        id,
+        status,
+        pokemonId,
+        pokemonName,
+        pokemonNickNames,
+        logic,
+        number
+    ) => {
+        try {
+            let request = configJSONApp.log.renamePokemon;
+            request.log_name = request.log_name + " (USER ID : " + id + ")";
+            request.log_description = request.log_description + " (STATUS : " + status + ") ";
+            request.log_description = request.log_description + " (POKEMON ID : " + pokemonId + ") ";
+            request.log_description = request.log_description + " (POKEMON NAME : " + pokemonName + ") ";
+            request.log_description =
+                request.log_description + " (POKEMON PREVIOUS NICKNAME : " + pokemonNickNames?.previous + ") ";
+            request.log_description = request.log_description + " (POKEMON NEW NICKNAME : " + pokemonNickNames?.new + ") ";
+            request.log_description = request.log_description + " (USED LOGIC : " + logic + ") ";
+            request.log_description = request.log_description + " (GET NUMBER : " + number + ") ";
+            request.log_active = 1;
+            request.log_created_on = moment().format();
+            helper.folder.createIfNotExists(configJSONApp.paths.log);
+            helper.json.create(configJSONApp.paths.log, dateFileName, { renamePokemon: [] });
+            helper.json.update(configJSONApp.paths.log, "renamePokemon", dateFileName, request, "push");
+            const logResponse = await logModel.store(request)
+            return helper.response.createSuccessResponse("Successfully to create rename log!", logResponse);
+        } catch (error) {
+            return helper.response.createFailedResponse("Failed to create rename log", error.message);
+        }
+    },
 };
